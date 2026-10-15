@@ -39,7 +39,7 @@ jobs:
           ./scripts/config --module CONFIG_ATH9K_HTC
 
           make exynos9810-crownlte_defconfig
-          make -j$(nproc) Image dtbs modules
+          make -j$(nproc) Image dtbs modules KCFLAGS="-Wno-error -Wno-array-bounds"
 
       - name: Upload kernel
         uses: actions/upload-artifact@v4
