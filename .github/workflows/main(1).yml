@@ -1,4 +1,4 @@
-  name: Build Note9 Nethunter Kernel
+name: Build Note9 Nethunter Kernel
 
 on: [push, workflow_dispatch]
 
