@@ -1,4 +1,4 @@
-name: Build Note9 Nethunter Kernel
+  name: Build Note9 Nethunter Kernel
 
 on: [push, workflow_dispatch]
 
@@ -37,6 +37,9 @@ jobs:
           ./scripts/config --module CONFIG_RTL88XXAU
           ./scripts/config --module CONFIG_RTL88X2BU
           ./scripts/config --module CONFIG_ATH9K_HTC
+
+          # Disable broken/incomplete Samsung proprietary driver (missing headers in this source dump)
+          ./scripts/config --disable CONFIG_USB_F_CONN_GADGET
 
           make exynos9810-crownlte_defconfig
           make -j$(nproc) Image dtbs modules KCFLAGS="-Wno-error -Wno-array-bounds"
