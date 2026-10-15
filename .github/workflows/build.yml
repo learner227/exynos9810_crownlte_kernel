@@ -1,40 +1,24 @@
-name: Build Note9 Nethunter Kernel
-on: [push, workflow_dispatch]
-jobs:
-  build:
-    runs-on: ubuntu-22.04
-    steps:
-      - name: Install deps
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y build-essential bc bison flex libssl-dev libelf-dev libncurses-dev
-
-      - name: Get toolchains + kernel
-        run: |
-          git clone https://android.googlesource.com/platform/prebuilts/gcc/linux-x86/aarch64/aarch64-linux-android-4.9 --depth=1 $HOME/gcc64
-          git clone https://android.googlesource.com/platform/prebuilts/gcc/linux-x86/arm/arm-linux-androideabi-4.9 --depth=1 $HOME/gcc32
-          git clone https://github.com/${{ github.repository }} --depth=1 kernel
-          cd kernel
-          echo "defconfigs found:"
-          ls arch/arm64/configs/ | grep crown
-
-      - name: Build kernel
+      - name: Build
         run: |
           cd kernel
           export ARCH=arm64
           export SUBARCH=arm64
-          export CROSS_COMPILE=$HOME/gcc64/bin/aarch64-linux-android-
-          export CROSS_COMPILE_ARM32=$HOME/gcc32/bin/arm-linux-androideabi-
-          export KCFLAGS="-w -Wno-error -Wno-array-bounds -Wno-stringop-overflow"
-          export KAFLAGS="-w"
+          export CROSS_COMPILE=aarch64-linux-gnu-
 
-          # 1. defconfig FIRST
-          make exynos9810-crownlte_defconfig
-
-          # 2. Enable WiFi + BT AFTER
+          # NetHunter Wi-Fi + Bluetooth configs
           ./scripts/config --enable CONFIG_PACKET
           ./scripts/config --enable CONFIG_CFG80211
           ./scripts/config --enable CONFIG_MAC80211
           ./scripts/config --enable CONFIG_RFKILL
           ./scripts/config --enable CONFIG_BT
-          ./scripts/config --
+          ./scripts/config --enable CONFIG_BT_RFCOMM
+          ./scripts/config --enable CONFIG_BT_HIDP
+          ./scripts/config --enable CONFIG_BT_HCIUSB
+          ./scripts/config --enable CONFIG_USB_NET_RNDIS_WLAN
+          ./scripts/config --module CONFIG_RTL88XXAU
+          ./scripts/config --module CONFIG_RTL88X2BU
+          ./scripts/config --module CONFIG_ATH9K_HTC
+
+          make exynos9810-crownlte_defconfig
+          make -j$(nproc) Image dtbs modules KCFLAGS="-Wno-error -Wno-array-bounds -Wno-error=misleading-indentation -Wno-misleading-indentation"
+          
